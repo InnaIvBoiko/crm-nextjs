@@ -123,6 +123,10 @@ export const createCompany = async (
     });
 };
 
+export const getPromotion = (id: string, init?: RequestInit) => {
+    return sendRequest<Promotion>(buildUrl('promotions', id), init);
+};
+
 export const createPromotion = async (
     data: Omit<Promotion, 'id'>,
     init?: RequestInit,
@@ -134,5 +138,51 @@ export const createPromotion = async (
             ...(init && init.headers),
             'content-type': 'application/json',
         },
+    });
+};
+
+export const updateCompany = async (
+    id: string,
+    data: Omit<Company, 'id' | 'hasPromotions'>,
+    init?: RequestInit,
+) => {
+    return sendRequest<Company>(buildUrl('companies', id), {
+        ...init,
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+            ...(init && init.headers),
+            'content-type': 'application/json',
+        },
+    });
+};
+
+export const updatePromotion = async (
+    id: string,
+    data: Omit<Promotion, 'id'>,
+    init?: RequestInit,
+) => {
+    return sendRequest<Promotion>(buildUrl('promotions', id), {
+        ...init,
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+            ...(init && init.headers),
+            'content-type': 'application/json',
+        },
+    });
+};
+
+export const deleteCompany = async (id: string, init?: RequestInit) => {
+    return sendRequest<Company>(buildUrl('companies', id), {
+        ...init,
+        method: 'DELETE',
+    });
+};
+
+export const deletePromotion = async (id: string, init?: RequestInit) => {
+    return sendRequest<Promotion>(buildUrl('promotions', id), {
+        ...init,
+        method: 'DELETE',
     });
 };
