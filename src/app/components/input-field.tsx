@@ -4,11 +4,14 @@ import React from 'react';
 import { Field } from 'formik';
 
 export interface InputFieldProps {
+    required?: boolean;
     label?: string;
     id?: string;
     name: string;
     placeholder?: string;
     type?: string;
+    as?: string;
+    children?: React.ReactNode;
 }
 
 export default function InputField({ label, id, ...rest }: InputFieldProps) {

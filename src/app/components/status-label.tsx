@@ -5,6 +5,7 @@ import { CompanyStatus } from '@/src/lib/api';
 export interface StatusLabelProps {
     status: CompanyStatus;
     disabled?: boolean;
+    styled?: boolean;
 }
 
 const labelByStatus = {
@@ -14,7 +15,15 @@ const labelByStatus = {
     [CompanyStatus.Suspended]: 'Suspended',
 };
 
-export default function StatusLabel({ status, disabled }: StatusLabelProps) {
+export default function StatusLabel({
+    status,
+    disabled,
+    styled = true,
+}: StatusLabelProps) {
+    if (!styled) {
+        return <>{labelByStatus[status]}</>;
+    }
+
     return (
         <div
             className={clsx(
