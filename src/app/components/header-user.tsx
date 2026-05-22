@@ -1,0 +1,76 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Button from './button';
+import AuthModal from './auth-modal';
+import { useAuth } from './auth-provider';
+
+function UserIcon() {
+    return (
+        <span className='flex h-11 w-11 items-center justify-center rounded-full bg-gray-100'>
+            <svg
+                className='h-6 w-6 text-gray-400'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth={1.6}
+                aria-hidden='true'
+            >
+                <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'
+                />
+            </svg>
+        </span>
+    );
+}
+
+export default function HeaderUser() {
+    const { user } = useAuth();
+    const [showAuth, setShowAuth] = useState(false);
+
+    if (user) {
+        // Only accounts whose email contains "admin" get the profile photo.
+        const isAdmin = user.email.toLowerCase().includes('admin');
+
+        return (
+            <div className='flex items-center gap-3'>
+                {isAdmin ? (
+                    <Image
+                        width={44}
+                        height={44}
+                        src='/images/avatar.png'
+                        alt='avatar'
+                    />
+                ) : (
+                    <UserIcon />
+                )}
+                <div>
+                    <p className='text-base font-semibold text-gray-900'>
+                        {user.name}
+                    </p>
+                    <p className='text-sm font-light text-gray-900'>
+                        {user.email}
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-3'>
+                    <UserIcon />
+                    <p className='text-base font-semibold text-gray-900'>
+                        Guest
+                    </p>
+                </div>
+                <Button onClick={() => setShowAuth(true)}>Log in</Button>
+            </div>
+            <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
+        </>
+    );
+}

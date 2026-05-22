@@ -1,15 +1,23 @@
 'use client';
 
 import React, { Fragment } from 'react';
+import clsx from 'clsx';
 import { Dialog, Transition } from '@headlessui/react';
 
 export interface ModalProps {
     children?: React.ReactNode;
     show: boolean;
     onClose: () => void;
+    /** Overrides the panel width (defaults to `sm:max-w-2xl`). */
+    panelClassName?: string;
 }
 
-export default function Modal({ show, children, onClose }: ModalProps) {
+export default function Modal({
+    show,
+    children,
+    onClose,
+    panelClassName,
+}: ModalProps) {
     return (
         <Transition.Root as={Fragment} show={show}>
             <Dialog
@@ -28,7 +36,12 @@ export default function Modal({ show, children, onClose }: ModalProps) {
                 >
                     <div className='fixed inset-0 bg-gray-500/75 transition-opacity' />
                 </Transition.Child>
-                <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all p-7 mx-auto sm:my-10 sm:w-full sm:max-w-2xl'>
+                <Dialog.Panel
+                    className={clsx(
+                        'relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all p-7 mx-auto sm:my-10 sm:w-full',
+                        panelClassName ?? 'sm:max-w-2xl',
+                    )}
+                >
                     {children}
                 </Dialog.Panel>
             </Dialog>
