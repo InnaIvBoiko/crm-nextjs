@@ -19,7 +19,7 @@ export default async function Page({}) {
     return (
         <div className='grid grid-cols-12 gap-5'>
             {(Object.keys(labelByStat) as (keyof SummaryStats)[]).map((key) => (
-                <div key={key} className='col-span-3'>
+                <div key={key} className='col-span-6 md:col-span-3'>
                     <StatCard
                         type={StatCardType.Gradient}
                         label={labelByStat[key]}

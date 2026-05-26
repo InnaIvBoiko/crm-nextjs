@@ -36,11 +36,11 @@ export default async function Page({ params }: PageProps) {
 
     return (
         <HydrationBoundary state={dehydratedState}>
-            <div className='py-6 px-10 grid grid-cols-12 gap-5'>
-                <div className='col-span-3'>
+            <div className='py-6 px-4 md:px-10 grid grid-cols-12 gap-5'>
+                <div className='col-span-12 md:col-span-4 lg:col-span-3'>
                     <CompanyInfo companyId={id} />
                 </div>
-                <div className='col-span-9'>
+                <div className='col-span-12 md:col-span-8 lg:col-span-9'>
                     <CompanyPromotions companyId={id} />
                 </div>
             </div>

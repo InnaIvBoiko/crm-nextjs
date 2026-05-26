@@ -38,7 +38,7 @@ export default function Modal({
                 </Transition.Child>
                 <Dialog.Panel
                     className={clsx(
-                        'relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all p-7 mx-auto sm:my-10 sm:w-full',
+                        'relative transform overflow-y-auto rounded-lg bg-white shadow-xl transition-all p-4 sm:p-7 w-full mx-4 my-4 sm:my-10 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-5rem)]',
                         panelClassName ?? 'sm:max-w-2xl',
                     )}
                 >

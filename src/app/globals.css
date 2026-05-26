@@ -3,3 +3,16 @@
 body {
     background: #fafafa;
 }
+
+@media (max-width: 640px) {
+    /* mobile */
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* tablet */
+}
+
+@media (min-width: 1025px) {
+    /* desktop */
+}
+

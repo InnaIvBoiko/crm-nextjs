@@ -12,16 +12,16 @@ export interface CompanyRowProps {
 export default function CompanyRow({ company }: CompanyRowProps) {
     return (
         <tr className='h-14 text-center text-gray-900 bg-white'>
-            <td className='text-xs font-medium text-blue-700 rounded-l border-l-4 border-blue-700'>
+            <td className='px-2 text-xs font-medium text-blue-700 rounded-l border-l-4 border-blue-700 whitespace-nowrap'>
                 {company.categoryTitle}
             </td>
-            <td>
+            <td className='px-2 whitespace-nowrap'>
                 <Link href={`/companies/${company.id}`}>{company.title}</Link>
             </td>
-            <td>
+            <td className='px-2'>
                 <StatusLabel status={company.status} />
             </td>
-            <td>
+            <td className='px-2'>
                 <div className='inline-flex items-center gap-1'>
                     <Image
                         width={16}
@@ -41,8 +41,8 @@ export default function CompanyRow({ company }: CompanyRowProps) {
                     </span>
                 </div>
             </td>
-            <td>{company.countryTitle}</td>
-            <td className='rounded-r'>
+            <td className='px-2'>{company.countryTitle}</td>
+            <td className='px-2 rounded-r whitespace-nowrap'>
                 {new Date(company.joinedDate).toLocaleDateString('uk-UA')}
             </td>
         </tr>

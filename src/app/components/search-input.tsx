@@ -10,7 +10,7 @@ export default function SearchInput({
     ...rest
 }: SearchInputProps) {
     return (
-        <div className='relative w-96'>
+        <div className='relative w-full md:w-96'>
             <input
                 {...rest}
                 type='text'

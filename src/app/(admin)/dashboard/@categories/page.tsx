@@ -18,7 +18,7 @@ export default async function Page({}) {
         <DashboardCard label='Categories of companies'>
             <div className='grid grid-cols-12 gap-3 pb-5 px-5'>
                 {categories.map(({ id, title }) => (
-                    <div key={id} className='col-span-3'>
+                    <div key={id} className='col-span-6 sm:col-span-4 md:col-span-3'>
                         <StatCard
                             type={StatCardType.Dark}
                             label={title}

@@ -13,7 +13,7 @@ export default function SummaryTableCell({
     return (
         <td
             className={clsx(
-                'py-2 px-5 text-sm border-gray-100 border-r first-of-type:border-l',
+                'py-2 px-2 sm:px-5 text-sm border-gray-100 border-r first-of-type:border-l',
                 `text-${align}`,
             )}
         >

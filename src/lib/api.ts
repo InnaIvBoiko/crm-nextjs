@@ -55,10 +55,14 @@ export interface Promotion {
 }
 
 // Backend served by local Route Handlers in `src/app/api/v1`.
-// An absolute URL is required because these helpers also run in Server
-// Components, where `fetch` cannot resolve relative paths.
+// Server Components need an absolute URL (fetch can't resolve relative paths
+// on the server). On the client we use a relative URL so requests go to the
+// same origin the browser is on — required when accessing the dev server
+// from another device on the LAN.
 const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+    typeof window === 'undefined'
+        ? (process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000')
+        : '';
 
 const buildUrl = (...paths: string[]) =>
     `${API_BASE_URL}/api/v1/${paths.join('/')}`;

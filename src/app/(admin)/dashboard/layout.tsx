@@ -20,12 +20,12 @@ export default function Layout({
     return (
         <>
             {children}
-            <main className='grid grid-cols-12 gap-5 py-10 pl-10 pr-7'>
+            <main className='grid grid-cols-12 gap-5 py-6 px-4 md:py-10 md:pl-10 md:pr-7'>
                 <div className='col-span-12'>{stats}</div>
-                <div className='col-span-5'>{sales}</div>
-                <div className='col-span-7'>{categories}</div>
-                <div className='col-span-6'>{countries}</div>
-                <div className='col-span-6'>{promotions}</div>
+                <div className='col-span-12 lg:col-span-5'>{sales}</div>
+                <div className='col-span-12 lg:col-span-7'>{categories}</div>
+                <div className='col-span-12 md:col-span-6'>{countries}</div>
+                <div className='col-span-12 md:col-span-6'>{promotions}</div>
             </main>
         </>
     );

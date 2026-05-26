@@ -21,7 +21,7 @@ export default function CompanyPromotions({
     return (
         <div className='grid grid-cols-12 gap-5'>
             {data?.map((promotion) => (
-                <div key={promotion.id} className='col-span-4'>
+                <div key={promotion.id} className='col-span-12 sm:col-span-6 lg:col-span-4'>
                     <Promotion promotion={promotion} />
                 </div>
             ))}

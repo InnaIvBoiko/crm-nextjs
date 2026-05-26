@@ -47,7 +47,7 @@ export default function HeaderUser() {
                 ) : (
                     <UserIcon />
                 )}
-                <div>
+                <div className='hidden sm:block'>
                     <p className='text-base font-semibold text-gray-900'>
                         {user.name}
                     </p>
@@ -61,14 +61,16 @@ export default function HeaderUser() {
 
     return (
         <>
-            <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-2 sm:gap-4'>
                 <div className='flex items-center gap-3'>
                     <UserIcon />
-                    <p className='text-base font-semibold text-gray-900'>
+                    <p className='hidden sm:block text-base font-semibold text-gray-900'>
                         Guest
                     </p>
                 </div>
-                <Button onClick={() => setShowAuth(true)}>Log in</Button>
+                <Button onClick={() => setShowAuth(true)}>
+                    <span className='whitespace-nowrap'>Log in</span>
+                </Button>
             </div>
             <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
         </>
