@@ -1,5 +1,7 @@
 # crm-nextjs
 
+[![CI](https://github.com/InnaIvBoiko/crm-nextjs/actions/workflows/ci.yml/badge.svg)](https://github.com/InnaIvBoiko/crm-nextjs/actions/workflows/ci.yml)
+
 A CRM dashboard built with the Next.js App Router — a public landing page, mock
 authentication, a metrics dashboard, and full CRUD for companies and promotions
 on a self-contained in-memory backend.
@@ -47,6 +49,9 @@ The app runs at <http://localhost:3000>.
 | `npm run build` | Production build                             |
 | `npm run start` | Serve the production build (run build first) |
 | `npm run lint`  | Run ESLint                                   |
+| `npm run typecheck` | Type-check with `tsc --noEmit`           |
+| `npm test`      | Run the Vitest suite once                    |
+| `npm run test:watch` | Run Vitest in watch mode                |
 
 ## Environment
 
