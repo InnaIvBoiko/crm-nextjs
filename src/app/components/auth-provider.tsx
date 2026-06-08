@@ -1,6 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useSyncExternalStore,
+} from 'react';
 
 export interface AuthUser {
     name: string;
@@ -17,6 +22,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = 'crm-auth-user';
+const AUTH_EVENT = 'crm-auth-change';
 
 /** Build a display name from the local-part of an email address. */
 function nameFromEmail(email: string): string {
@@ -31,44 +37,75 @@ function nameFromEmail(email: string): string {
 }
 
 /**
+ * localStorage-backed auth store. Reading on mount via `useSyncExternalStore`
+ * (instead of an effect + setState) keeps the server/client render in sync —
+ * both start from `getServerSnapshot()` (`null`) and the client swaps in the
+ * stored session after hydration.
+ *
+ * `getSnapshot` must return a stable reference while the value is unchanged, so
+ * the parsed user is cached and only recomputed when the raw string changes.
+ */
+let cachedRaw: string | null = null;
+let cachedUser: AuthUser | null = null;
+
+function readUser(): AuthUser | null {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw === cachedRaw) return cachedUser;
+
+    cachedRaw = raw;
+    if (!raw) {
+        cachedUser = null;
+        return null;
+    }
+
+    try {
+        cachedUser = JSON.parse(raw) as AuthUser;
+    } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        cachedRaw = null;
+        cachedUser = null;
+    }
+
+    return cachedUser;
+}
+
+function subscribe(callback: () => void): () => void {
+    window.addEventListener(AUTH_EVENT, callback);
+    window.addEventListener('storage', callback);
+    return () => {
+        window.removeEventListener(AUTH_EVENT, callback);
+        window.removeEventListener('storage', callback);
+    };
+}
+
+function writeUser(next: AuthUser | null): void {
+    if (next) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } else {
+        localStorage.removeItem(STORAGE_KEY);
+    }
+    // Notify same-tab subscribers (the native `storage` event only fires in
+    // *other* tabs).
+    window.dispatchEvent(new Event(AUTH_EVENT));
+}
+
+/**
  * Mock client-side authentication. There is no backend — the session lives in
- * React state and is mirrored to localStorage so it survives a page reload.
- * Any credentials are accepted (demo mode).
+ * localStorage and is mirrored into React via an external store. Any
+ * credentials are accepted (demo mode).
  */
 export function AuthProvider({ children }: React.PropsWithChildren) {
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const user = useSyncExternalStore(subscribe, readUser, () => null);
 
-    // Restore the session after mount: keeps the server/client render in sync
-    // (both start as `null`), then updates once localStorage is readable.
-    useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) return;
-
-        try {
-            setUser(JSON.parse(stored) as AuthUser);
-        } catch {
-            localStorage.removeItem(STORAGE_KEY);
-        }
+    const login = useCallback((email: string) => {
+        writeUser({ name: nameFromEmail(email), email });
     }, []);
 
-    const persist = (next: AuthUser | null) => {
-        setUser(next);
-        if (next) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } else {
-            localStorage.removeItem(STORAGE_KEY);
-        }
-    };
+    const register = useCallback((name: string, email: string) => {
+        writeUser({ name: name.trim() || nameFromEmail(email), email });
+    }, []);
 
-    const login = (email: string) => {
-        persist({ name: nameFromEmail(email), email });
-    };
-
-    const register = (name: string, email: string) => {
-        persist({ name: name.trim() || nameFromEmail(email), email });
-    };
-
-    const logout = () => persist(null);
+    const logout = useCallback(() => writeUser(null), []);
 
     return (
         <AuthContext.Provider value={{ user, login, register, logout }}>
