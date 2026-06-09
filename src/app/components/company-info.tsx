@@ -8,6 +8,7 @@ import { deleteCompany, getCompany } from '@/src/lib/api';
 import StatusLabel from './status-label';
 import CardActions from './card-actions';
 import ConfirmModal from './confirm-modal';
+import { useAuth } from './auth-provider';
 
 export interface CompanyInfoProps {
     companyId: string;
@@ -16,6 +17,7 @@ export interface CompanyInfoProps {
 export default function CompanyInfo({ companyId }: CompanyInfoProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const { isAdmin } = useAuth();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     const { data: company } = useQuery({
@@ -38,12 +40,16 @@ export default function CompanyInfo({ companyId }: CompanyInfoProps) {
     return (
         <div className='flex flex-col gap-5'>
             <div className='group relative flex flex-col items-center p-7 gap-5 bg-gray-900 rounded'>
-                <CardActions
-                    editLabel='Edit company'
-                    deleteLabel='Delete company'
-                    onEdit={() => router.push(`/companies/${companyId}/edit`)}
-                    onDelete={() => setConfirmOpen(true)}
-                />
+                {isAdmin && (
+                    <CardActions
+                        editLabel='Edit company'
+                        deleteLabel='Delete company'
+                        onEdit={() =>
+                            router.push(`/companies/${companyId}/edit`)
+                        }
+                        onDelete={() => setConfirmOpen(true)}
+                    />
+                )}
                 <div className='relative w-20 h-20 overflow-hidden rounded-full bg-blue-500'>
                     {company.avatar && (
                         <Image

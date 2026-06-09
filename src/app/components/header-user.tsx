@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import clsx from 'clsx';
 import Button from './button';
 import AuthModal from './auth-modal';
 import { useAuth } from './auth-provider';
@@ -28,13 +29,10 @@ function UserIcon() {
 }
 
 export default function HeaderUser() {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const [showAuth, setShowAuth] = useState(false);
 
     if (user) {
-        // Only accounts whose email contains "admin" get the profile photo.
-        const isAdmin = user.email.toLowerCase().includes('admin');
-
         return (
             <div className='flex items-center gap-3'>
                 {isAdmin ? (
@@ -48,9 +46,21 @@ export default function HeaderUser() {
                     <UserIcon />
                 )}
                 <div className='hidden sm:block'>
-                    <p className='text-base font-semibold text-gray-900'>
-                        {user.name}
-                    </p>
+                    <div className='flex items-center gap-2'>
+                        <p className='text-base font-semibold text-gray-900'>
+                            {user.name}
+                        </p>
+                        <span
+                            className={clsx(
+                                'rounded-full px-2 py-0.5 text-xs font-medium',
+                                isAdmin
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-gray-100 text-gray-600',
+                            )}
+                        >
+                            {isAdmin ? 'Admin' : 'User'}
+                        </span>
+                    </div>
                     <p className='text-sm font-light text-gray-900'>
                         {user.email}
                     </p>

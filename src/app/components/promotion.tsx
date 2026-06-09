@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deletePromotion, Promotion as PromotionType } from '@/src/lib/api';
 import CardActions from './card-actions';
 import ConfirmModal from './confirm-modal';
+import { useAuth } from './auth-provider';
 
 export interface PromotionProps {
     promotion: PromotionType;
@@ -15,6 +16,7 @@ export interface PromotionProps {
 export default function Promotion({ promotion }: PromotionProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const { isAdmin } = useAuth();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     const { mutate: removePromotion, isPending } = useMutation({
@@ -36,16 +38,18 @@ export default function Promotion({ promotion }: PromotionProps) {
 
     return (
         <div className='group relative rounded overflow-hidden	bg-gray-100'>
-            <CardActions
-                editLabel='Edit promotion'
-                deleteLabel='Delete promotion'
-                onEdit={() =>
-                    router.push(
-                        `/companies/${promotion.companyId}/edit-promotion/${promotion.id}`,
-                    )
-                }
-                onDelete={() => setConfirmOpen(true)}
-            />
+            {isAdmin && (
+                <CardActions
+                    editLabel='Edit promotion'
+                    deleteLabel='Delete promotion'
+                    onEdit={() =>
+                        router.push(
+                            `/companies/${promotion.companyId}/edit-promotion/${promotion.id}`,
+                        )
+                    }
+                    onDelete={() => setConfirmOpen(true)}
+                />
+            )}
             <div className='relative w-full h-40 bg-gray-300'>
                 {promotion.avatar && (
                     <Image
