@@ -152,12 +152,27 @@ from Postgres.
 | `PUT    /api/v1/promotions/:id`    | Update a promotion                            |
 | `DELETE /api/v1/promotions/:id`    | Delete a promotion                            |
 
-## Authentication
+## Authentication & roles
 
 Authentication is a **client-side mock for demo purposes** — it is not real
 security. Any credentials are accepted, the session is kept in `localStorage`,
-and there is no server-side verification or route protection. Do not treat the
-signed-in state as a security boundary.
+and there is no server-side verification. Do not treat the signed-in state as a
+security boundary.
+
+There are two roles:
+
+| Role      | Can do                                  | Demo login                          |
+| --------- | --------------------------------------- | ----------------------------------- |
+| **Admin** | Browse **and** create / edit / delete   | `admin@example.com` / `Password123!` |
+| **User**  | Browse only (read-only)                 | `user@example.com` / `Password123!`  |
+
+The role is derived from the email: the admin demo address is the only admin,
+and every sign-up is a read-only user — so nobody can self-promote. The login
+modal surfaces both demo accounts with a one-click **Use** button.
+
+Role enforcement is **UI-level** (the create/edit/delete controls are hidden for
+non-admins), consistent with the mock nature of the auth. Real per-route or
+per-API enforcement would require a real auth backend.
 
 ## Deployment
 

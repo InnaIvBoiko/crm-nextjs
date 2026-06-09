@@ -77,11 +77,11 @@ export default function CompanyForm({ companyId, onSubmit }: CompanyFormProps) {
     const updateMutation = useMutation({
         mutationFn: (data: Omit<Company, 'id' | 'hasPromotions'>) =>
             updateCompany(companyId as string, data),
-        onSuccess: () => {
+        onSuccess: (updated) => {
+            // Write the server's fresh company straight into the detail cache so
+            // the new logo shows the moment the modal closes — no refetch race.
+            queryClient.setQueryData(['companies', companyId], updated);
             queryClient.invalidateQueries({ queryKey: ['companies'] });
-            queryClient.invalidateQueries({
-                queryKey: ['companies', companyId],
-            });
         },
     });
 
