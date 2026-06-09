@@ -1,10 +1,23 @@
 # crm-nextjs
 
 [![CI](https://github.com/InnaIvBoiko/crm-nextjs/actions/workflows/ci.yml/badge.svg)](https://github.com/InnaIvBoiko/crm-nextjs/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A CRM dashboard built with the Next.js App Router — a public landing page, mock
-authentication, a metrics dashboard, and full CRUD for companies and promotions
-backed by a Postgres database.
+authentication with **Admin / User roles**, a metrics dashboard, and full CRUD
+for companies and promotions backed by a Postgres database.
+
+**🔗 Live demo:** <https://crm-nextjs-six.vercel.app>
+
+## Screenshots
+
+| Landing page | Dashboard |
+| --- | --- |
+| ![Landing page](docs/screenshots/landing.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+
+| Login with demo roles | Company detail (admin) |
+| --- | --- |
+| ![Login modal](docs/screenshots/login.png) | ![Company detail](docs/screenshots/company-detail.png) |
 
 ## Tech stack
 
@@ -110,9 +123,49 @@ src/
     └── utils/                    # getQueryClient, getCountById
 ```
 
-Create / edit screens have both a real route (e.g. `/companies/[id]/edit`) and an
-intercepting route inside `@modal`: soft navigation shows a modal, while a direct
-hit or a refresh renders the full page.
+## Architecture
+
+A few Next.js App Router features are used deliberately — here is the reasoning
+behind each, not just that they're used.
+
+### Parallel routes (the dashboard & companies slots)
+
+The dashboard is composed of independent slots — `@stats`, `@sales`,
+`@categories`, `@countries`, `@promotions` — instead of one page that fetches
+everything. Each slot:
+
+- **streams in on its own** with its own `loading.tsx`, so a slow query (e.g.
+  sales aggregates) never blocks the rest of the dashboard from painting;
+- **fails in isolation** with its own `error.tsx`, so one broken widget degrades
+  to an error card instead of taking down the whole page.
+
+The companies screen uses the same idea for its `@header`, `@toolbar` and
+`@modal` regions.
+
+### Intercepting routes (modals with a real URL)
+
+Create/edit screens exist as **real routes** (`/companies/[id]/edit`,
+`/companies/[id]/new-promotion`, …) *and* as intercepting routes inside the
+`@modal` slot (`(.)edit`, …). The payoff:
+
+- **soft navigation** (clicking Edit) intercepts and renders the form as a
+  **modal over the current page** — fast, no context lost;
+- a **direct visit or refresh** of the same URL renders the **full page** —
+  so every modal is shareable, bookmarkable and reload-safe.
+
+One form component backs both; the modal just wraps it.
+
+### Data flow
+
+```
+Client component ──React Query──▶ Route handler (/api/v1) ──Drizzle──▶ Postgres
+                                       ▲
+Server component ──fetch(absolute)─────┘
+```
+
+The route handlers are the single HTTP API over the database; both Server
+Components (via `fetch`) and Client Components (via React Query) go through them,
+so caching, mutations and invalidation live in one place.
 
 ## Database
 
@@ -192,3 +245,7 @@ The app builds with `npm run build` and can be deployed to any Next.js host
 - The `(admin)` section is marked `dynamic = 'force-dynamic'`: its Server
   Components fetch the app's own route handlers, so the pages render per-request
   rather than being statically prerendered at build time.
+
+## License
+
+Released under the [MIT License](LICENSE).
