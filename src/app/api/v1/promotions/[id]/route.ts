@@ -1,5 +1,11 @@
 import { type Promotion } from '@/src/lib/api';
-import { companies, promotions } from '@/src/lib/mock-data';
+import {
+    deletePromotion,
+    getPromotionById,
+    updatePromotion,
+} from '@/src/lib/db/queries';
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/v1/promotions/:id
 export async function GET(
@@ -7,7 +13,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> },
 ) {
     const { id } = await params;
-    const promotion = promotions.find((item) => item.id === id);
+    const promotion = await getPromotionById(Number(id));
 
     if (!promotion) {
         return new Response('Not found!', { status: 404 });
@@ -17,21 +23,18 @@ export async function GET(
 }
 
 // PUT /api/v1/promotions/:id
-// Updates a promotion in the in-memory mock store (`id` is preserved).
 export async function PUT(
     request: Request,
     { params }: { params: Promise<{ id: string }> },
 ) {
     const { id } = await params;
-    const index = promotions.findIndex((item) => item.id === id);
+    const data = (await request.json()) as Omit<Promotion, 'id'>;
 
-    if (index === -1) {
+    const updated = await updatePromotion(Number(id), data);
+
+    if (!updated) {
         return new Response('Not found!', { status: 404 });
     }
-
-    const data = (await request.json()) as Omit<Promotion, 'id'>;
-    const updated: Promotion = { ...promotions[index], ...data, id };
-    promotions[index] = updated;
 
     return Response.json(updated);
 }
@@ -42,20 +45,10 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> },
 ) {
     const { id } = await params;
-    const index = promotions.findIndex((item) => item.id === id);
+    const deleted = await deletePromotion(Number(id));
 
-    if (index === -1) {
+    if (!deleted) {
         return new Response('Not found!', { status: 404 });
-    }
-
-    const [deleted] = promotions.splice(index, 1);
-
-    // Keep the owning company's `hasPromotions` flag consistent.
-    const company = companies.find((item) => item.id === deleted.companyId);
-    if (company) {
-        company.hasPromotions = promotions.some(
-            (item) => item.companyId === deleted.companyId,
-        );
     }
 
     return Response.json(deleted);

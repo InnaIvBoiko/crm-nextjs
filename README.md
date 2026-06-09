@@ -4,16 +4,18 @@
 
 A CRM dashboard built with the Next.js App Router — a public landing page, mock
 authentication, a metrics dashboard, and full CRUD for companies and promotions
-on a self-contained in-memory backend.
+backed by a Postgres database.
 
 ## Tech stack
 
 - **Next.js 16** (App Router, Turbopack) + **React 19**
 - **TypeScript 5**
 - **Tailwind CSS v4**
+- **Postgres** (Neon serverless) + **Drizzle ORM** — typed schema, migrations, queries
 - **TanStack React Query 5** — server state / caching
 - **Formik** — forms
 - **Headless UI** — accessible UI primitives (modals, accordion)
+- **Vitest** + React Testing Library — unit tests
 
 ## Features
 
@@ -31,11 +33,22 @@ on a self-contained in-memory backend.
 
 - Node.js **20.9** or later
 - npm
+- A Postgres database (a free [Neon](https://neon.tech) project works out of the box)
 
 ## Getting started
 
 ```bash
 npm install
+
+# 1. Configure env
+cp .env.example .env.local
+# then edit .env.local and set DATABASE_URL to your Postgres connection string
+
+# 2. Create the tables and seed sample data
+npm run db:migrate
+npm run db:seed
+
+# 3. Run the app
 npm run dev
 ```
 
@@ -52,16 +65,21 @@ The app runs at <http://localhost:3000>.
 | `npm run typecheck` | Type-check with `tsc --noEmit`           |
 | `npm test`      | Run the Vitest suite once                    |
 | `npm run test:watch` | Run Vitest in watch mode                |
+| `npm run db:generate` | Generate a SQL migration from the schema |
+| `npm run db:migrate` | Apply pending migrations to the database  |
+| `npm run db:seed`   | Seed the database with sample data         |
+| `npm run db:studio` | Open Drizzle Studio (browse the data)      |
 
 ## Environment
 
-Configuration lives in `.env.local`:
+Configuration lives in `.env.local` (see [`.env.example`](.env.example)):
 
 | Variable                   | Default                 | Description                                                                                                                     |
 | -------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:3000` | Absolute base URL of the API. Server Components fetch the route handlers with full URLs, so this must point at the running app. |
+| `DATABASE_URL`             | —                       | Postgres connection string used by Drizzle in the route handlers. **Required.**                                               |
 
-When deploying, set this to the deployment's public URL — see [Deployment](#deployment).
+When deploying, set both on the host — see [Deployment](#deployment).
 
 ## Project structure
 
@@ -79,11 +97,16 @@ src/
 │   │           ├── edit/                         # Edit company
 │   │           ├── new-promotion/                # Create promotion
 │   │           └── edit-promotion/[promotionId]/ # Edit promotion
-│   ├── api/v1/                   # Route handlers (the mock backend)
+│   ├── api/v1/                   # Route handlers (the HTTP API over the DB)
 │   └── components/               # Shared UI components
 └── lib/
     ├── api.ts                    # Typed fetch helpers + domain types
-    ├── mock-data.ts              # In-memory data served by the route handlers
+    ├── db/                       # Database layer (Drizzle)
+    │   ├── schema.ts             # Tables + enums
+    │   ├── index.ts              # Neon-backed Drizzle client
+    │   ├── queries.ts            # Data-access functions used by the route handlers
+    │   └── seed.ts               # Seed script (npm run db:seed)
+    ├── mock-data.ts              # Sample data — source for the seed script
     └── utils/                    # getQueryClient, getCountById
 ```
 
@@ -91,12 +114,26 @@ Create / edit screens have both a real route (e.g. `/companies/[id]/edit`) and a
 intercepting route inside `@modal`: soft navigation shows a modal, while a direct
 hit or a refresh renders the full page.
 
+## Database
+
+Data lives in Postgres, accessed through [Drizzle ORM](https://orm.drizzle.team).
+The schema ([`src/lib/db/schema.ts`](src/lib/db/schema.ts)) is normalized —
+companies reference countries and categories by id, and promotions/sales
+reference companies — while the API returns denormalized shapes (titles resolved
+via joins, `hasPromotions` derived), so the frontend contract is unchanged.
+
+- **Migrations** live in [`drizzle/`](drizzle) and are generated from the schema
+  with `npm run db:generate`, then applied with `npm run db:migrate`.
+- **Seed data** comes from [`src/lib/mock-data.ts`](src/lib/mock-data.ts) via
+  `npm run db:seed`.
+- The data-access functions in [`src/lib/db/queries.ts`](src/lib/db/queries.ts)
+  keep the route handlers thin.
+
 ## API
 
-The backend is mocked with in-memory data ([`src/lib/mock-data.ts`](src/lib/mock-data.ts))
-served by Route Handlers under [`src/app/api/v1/`](src/app/api/v1). **Data is held
-in memory and resets on every server restart** (and is not shared across
-serverless instances — see [Deployment](#deployment)).
+Route handlers under [`src/app/api/v1/`](src/app/api/v1) expose the database over
+HTTP. They are marked `dynamic = 'force-dynamic'` so every request reads fresh
+from Postgres.
 
 | Endpoint                           | Description                                   |
 | ---------------------------------- | --------------------------------------------- |
@@ -131,9 +168,9 @@ The app builds with `npm run build` and can be deployed to any Next.js host
   `https://your-app.vercel.app`). Otherwise Server Components fetch
   `http://localhost:3000` and the data pages fail. `NEXT_PUBLIC_*` variables are
   inlined at build time, so **redeploy** after changing it.
-- The backend is **in-memory**: on serverless platforms data does not persist
-  and is inconsistent across instances. A real database is required for
-  production use.
+- Set `DATABASE_URL` to your Postgres connection string (on Vercel: Project →
+  Settings → Environment Variables). Run `npm run db:migrate` and `npm run db:seed`
+  against that database once before the first deploy.
 
 ## Notes
 

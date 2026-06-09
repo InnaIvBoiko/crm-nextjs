@@ -1,46 +1,26 @@
 import { type NextRequest } from 'next/server';
 import { type Promotion } from '@/src/lib/api';
-import { companies, promotions } from '@/src/lib/mock-data';
+import { createPromotion, getPromotions } from '@/src/lib/db/queries';
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/v1/promotions
-// Supports mockapi-style field filtering, e.g. /api/v1/promotions?companyId=2
+// Supports filtering by company, e.g. /api/v1/promotions?companyId=2
 export async function GET(request: NextRequest) {
-    const { searchParams } = request.nextUrl;
-    const sample = promotions[0];
+    const companyId = request.nextUrl.searchParams.get('companyId');
 
-    let result: Promotion[] = promotions;
+    const promotions = await getPromotions(
+        companyId ? Number(companyId) : undefined,
+    );
 
-    for (const [key, value] of searchParams.entries()) {
-        if (sample && key in sample) {
-            result = result.filter(
-                (promotion) =>
-                    String(promotion[key as keyof Promotion]) === value,
-            );
-        }
-    }
-
-    return Response.json(result);
+    return Response.json(promotions);
 }
 
 // POST /api/v1/promotions
-// Creates a promotion and appends it to the in-memory mock store.
 export async function POST(request: NextRequest) {
     const data = (await request.json()) as Omit<Promotion, 'id'>;
 
-    const nextId =
-        promotions.reduce(
-            (max, { id }) => Math.max(max, Number(id) || 0),
-            0,
-        ) + 1;
-
-    const promotion: Promotion = { ...data, id: String(nextId) };
-    promotions.push(promotion);
-
-    // Keep the owning company's `hasPromotions` flag consistent.
-    const company = companies.find(({ id }) => id === promotion.companyId);
-    if (company) {
-        company.hasPromotions = true;
-    }
+    const promotion = await createPromotion(data);
 
     return Response.json(promotion, { status: 201 });
 }
